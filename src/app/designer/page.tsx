@@ -36,7 +36,7 @@ export default function DesignerPage() {
       <div className="w-full max-w-md">
         <h1 className="font-headline text-2xl text-accent mb-4">Focumon Designer</h1>
         <p className="font-body text-muted-foreground mb-8">
-          Use the power of AI to generate a new Focumon.
+          Use the power of AI to generate a new Focumon with its own personality and behaviors.
         </p>
 
         <Button onClick={handleGenerate} disabled={isLoading} className="mb-8 font-headline">
@@ -56,6 +56,16 @@ export default function DesignerPage() {
               <CardTitle className="font-headline">{focumon.name}</CardTitle>
               <CardDescription className="font-body pt-2">{focumon.description}</CardDescription>
             </CardHeader>
+            <CardContent className="font-body text-sm space-y-2">
+                <div>
+                    <h3 className="font-headline text-xs text-muted-foreground">Personality</h3>
+                    <p>{focumon.personality}</p>
+                </div>
+                 <div>
+                    <h3 className="font-headline text-xs text-muted-foreground">Animation</h3>
+                    <p>{focumon.animation}</p>
+                </div>
+            </CardContent>
           </Card>
         )}
       </div>

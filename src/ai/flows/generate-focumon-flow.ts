@@ -18,6 +18,8 @@ export type GenerateFocumonInput = z.infer<typeof GenerateFocumonInputSchema>;
 const GeneratedFocumonSchema = z.object({
   name: z.string().describe('The name of the Focumon. Should be playful and unique.'),
   description: z.string().describe('A short, one-sentence description of the Focumon.'),
+  personality: z.string().describe('A few words describing the Focumon\'s personality (e.g., "Calm and wise", "Energetic and playful").'),
+  animation: z.string().describe('A brief description of a simple idle animation for the Focumon (e.g., "Tail wags slowly", "Blinks and looks around").'),
 });
 export type GeneratedFocumon = z.infer<typeof GeneratedFocumonSchema>;
 
@@ -29,7 +31,7 @@ const focumonGenerationPrompt = ai.definePrompt({
 
     Prompt: {{{prompt}}}
     
-    Generate a name and a description for this new Focumon. The name should be short, catchy, and unique. The description should be a single sentence that captures its essence.`,
+    Generate a name, a description, a personality, and a simple animation description for this new Focumon. The name should be short, catchy, and unique. The description should be a single sentence that captures its essence.`,
 });
 
 
