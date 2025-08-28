@@ -4,30 +4,39 @@ import { useFocusSession } from '@/hooks/useFocusSession';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
+import Focumon from '@/components/Focumon';
+import { getDiscoveredFocumon } from '@/lib/focumon';
 
 function formatTime(seconds: number) {
-  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
   const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return `${h}:${m}:${s}`;
+  return `${m}:${s}`;
 }
 
 export default function FocusPage() {
-  const { sessionTime, isRunning, startTimer, stopTimer } = useFocusSession();
+  const { sessionTime, isRunning, startTimer, stopTimer, completedSessions } = useFocusSession();
+
+  const discoveredFocumon = getDiscoveredFocumon(completedSessions);
+  const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground p-4">
-      <header className="flex items-center">
+       <header className="flex items-center justify-between">
         <Link href="/" className="p-2 -ml-2">
           <Button variant="ghost" size="icon">
             <ChevronLeft className="w-6 h-6" />
           </Button>
         </Link>
-        <h1 className="font-headline text-lg ml-2">FOCUS SESSION</h1>
+        <h1 className="font-headline text-lg">FOCUS SESSION</h1>
+        <div className="w-10"></div>
       </header>
       
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <div className="font-headline text-7xl md:text-8xl text-center tabular-nums text-primary" style={{letterSpacing: '-0.05em'}}>
+        <Focumon focumon={latestFocumon} />
+      </div>
+      
+      <footer className="w-full flex flex-col items-center gap-4 py-4">
+        <div className="font-headline text-5xl md:text-6xl text-center tabular-nums text-primary" style={{letterSpacing: '-0.05em'}}>
           {formatTime(sessionTime)}
         </div>
         
@@ -42,11 +51,9 @@ export default function FocusPage() {
             </Button>
           )}
         </div>
-      </div>
-      
-      <footer className="text-center text-muted-foreground text-sm font-body py-4">
-        <p>Stay on this page to keep the timer running.</p>
-        <p>Your progress will be saved automatically.</p>
+        <p className="text-center text-muted-foreground text-sm font-body pt-4">
+            Stay on this page to keep the timer running.
+        </p>
       </footer>
     </div>
   );
