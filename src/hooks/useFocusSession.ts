@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const FOCUS_SESSION_MIN_DURATION = 25 * 60; // 25 minutes
+
 const safelyParseJSON = (json: string | null, defaultValue: any) => {
   if (json === null) return defaultValue;
   try {
@@ -16,12 +18,16 @@ export function useFocusSession() {
   const [sessionTime, setSessionTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [completedSessions, setCompletedSessions] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Load initial state from localStorage on client side
     const storedTotalTime = safelyParseJSON(localStorage.getItem('focumonTotalTime'), 0);
     setTotalTime(storedTotalTime);
+
+    const storedCompletedSessions = safelyParseJSON(localStorage.getItem('focumonCompletedSessions'), 0);
+    setCompletedSessions(storedCompletedSessions);
 
     const storedSessionStart = safelyParseJSON(localStorage.getItem('focumonSessionStart'), null);
     if (storedSessionStart) {
@@ -43,12 +49,18 @@ export function useFocusSession() {
       const newTotal = totalTime + elapsed;
       setTotalTime(newTotal);
       localStorage.setItem('focumonTotalTime', JSON.stringify(newTotal));
+      
+      if (elapsed >= FOCUS_SESSION_MIN_DURATION) {
+        const newCompletedSessions = completedSessions + 1;
+        setCompletedSessions(newCompletedSessions);
+        localStorage.setItem('focumonCompletedSessions', JSON.stringify(newCompletedSessions));
+      }
     }
     
     setSessionTime(0);
     setSessionStartTime(null);
     localStorage.removeItem('focumonSessionStart');
-  }, [sessionStartTime, totalTime]);
+  }, [sessionStartTime, totalTime, completedSessions]);
 
   const startTimer = useCallback(() => {
     if (isRunning) return;
@@ -77,5 +89,5 @@ export function useFocusSession() {
     };
   }, [isRunning, sessionStartTime]);
 
-  return { totalTime, sessionTime, isRunning, startTimer, stopTimer };
+  return { totalTime, sessionTime, isRunning, startTimer, stopTimer, completedSessions };
 }

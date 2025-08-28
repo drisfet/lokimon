@@ -5,6 +5,7 @@ import Focumon from '@/components/Focumon';
 import { Button } from '@/components/ui/button';
 import { useFocusSession } from '@/hooks/useFocusSession';
 import { useEffect, useState } from 'react';
+import { getDiscoveredFocumon } from '@/lib/focumon';
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -15,7 +16,7 @@ function formatTime(seconds: number) {
 }
 
 export default function PortalPage() {
-  const { totalTime, sessionTime } = useFocusSession();
+  const { totalTime, sessionTime, completedSessions } = useFocusSession();
   const [displayTime, setDisplayTime] = useState(0);
 
   useEffect(() => {
@@ -23,8 +24,11 @@ export default function PortalPage() {
     setDisplayTime(totalTime + sessionTime);
   }, [totalTime, sessionTime]);
 
+  const discoveredFocumon = getDiscoveredFocumon(completedSessions);
+  const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
+
   const totalFocusInSeconds = 25 * 60; // Example: 25 minutes goal
-  const focusPercentage = Math.min(100, (displayTime / totalFocusInSeconds) * 100);
+  const focusPercentage = Math.min(100, (sessionTime / totalFocusInSeconds) * 100);
 
   return (
     <div className="p-4 flex flex-col items-center text-center h-full">
@@ -35,13 +39,13 @@ export default function PortalPage() {
       </header>
 
       <div className="flex-grow flex items-center justify-center">
-        <Focumon />
+        <Focumon focumon={latestFocumon} />
       </div>
 
       <footer className="w-full flex flex-col items-center gap-4 py-4">
         <div className="font-headline text-center text-sm">
           <p>Focused for: <span className="text-accent">{formatTime(displayTime)}</span></p>
-          <p>Time in focus: <span className="text-accent">{focusPercentage.toFixed(0)}%</span></p>
+           {sessionTime > 0 && <p>Current session: <span className="text-accent">{focusPercentage.toFixed(0)}%</span></p>}
         </div>
         <Link href="/focus">
           <Button
