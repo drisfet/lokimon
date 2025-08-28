@@ -64,7 +64,11 @@ const FocumonCharacter = ({ isRunning }: { isRunning: boolean }) => {
 };
 
 export default function AutonomousFocumon({ isRunning }: { isRunning: boolean }) {
-  const blurFilter = new BlurFilter(4);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div
@@ -77,13 +81,15 @@ export default function AutonomousFocumon({ isRunning }: { isRunning: boolean })
         aspectRatio: `${STAGE_WIDTH}/${STAGE_HEIGHT}`
       }}
     >
-      <Stage
-        width={STAGE_WIDTH}
-        height={STAGE_HEIGHT}
-        options={{ backgroundAlpha: 0 }}
-      >
-        <FocumonCharacter isRunning={isRunning} />
-      </Stage>
+      {isClient && (
+        <Stage
+          width={STAGE_WIDTH}
+          height={STAGE_HEIGHT}
+          options={{ backgroundAlpha: 0 }}
+        >
+          <FocumonCharacter isRunning={isRunning} />
+        </Stage>
+      )}
        { !isRunning && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
           <p className="font-headline text-2xl text-white text-center">
