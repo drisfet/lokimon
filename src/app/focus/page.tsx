@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Focumon from '@/components/Focumon';
 import { getDiscoveredFocumon } from '@/lib/focumon';
 import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -18,11 +18,33 @@ function formatTime(seconds: number) {
   return `${m}:${s}`;
 }
 
+const variants = {
+  enter: (direction: number) => {
+    return {
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    };
+  },
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction: number) => {
+    return {
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    };
+  }
+};
+
 export default function FocusPage() {
   const { sessionTime, isRunning, startTimer, stopTimer, completedSessions } = useFocusSession();
   const [generatedFocumon, setGeneratedFocumon] = useState<GeneratedFocumon | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
+  
+  const [[page, direction], setPage] = useState([0, 0]);
 
   const discoveredFocumon = getDiscoveredFocumon(completedSessions);
   const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
@@ -46,16 +68,14 @@ export default function FocusPage() {
     <Focumon key="focumon" focumon={latestFocumon} generatedFocumon={generatedFocumon} />
   ];
 
-  const handleNext = () => {
-    setCurrentComponentIndex((prevIndex) => (prevIndex + 1) % components.length);
-  };
+  const componentIndex = (page % components.length + components.length) % components.length;
 
-  const handlePrev = () => {
-    setCurrentComponentIndex((prevIndex) => (prevIndex - 1 + components.length) % components.length);
+  const paginate = (newDirection: number) => {
+    setPage([page + newDirection, newDirection]);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground p-4">
+    <div className="flex flex-col h-screen bg-background text-foreground p-4 overflow-hidden">
        <header className="flex items-center justify-between">
         <Link href="/" className="p-2 -ml-2">
           <Button variant="ghost" size="icon">
@@ -67,15 +87,29 @@ export default function FocusPage() {
       </header>
       
       <div className="flex-1 flex flex-col items-center justify-center gap-8 relative">
-        <div className="relative w-64 h-64 flex items-center justify-center">
-            {components[currentComponentIndex]}
-        </div>
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={page}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            className="absolute w-64 h-64 flex items-center justify-center"
+          >
+            {components[componentIndex]}
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="absolute inset-x-0 flex items-center justify-between">
-            <Button onClick={handlePrev} variant="ghost" size="icon" className="rounded-full">
+        <div className="absolute inset-x-0 flex items-center justify-between z-20">
+            <Button onClick={() => paginate(-1)} variant="ghost" size="icon" className="rounded-full">
               <ChevronLeft className="w-8 h-8" />
             </Button>
-            <Button onClick={handleNext} variant="ghost" size="icon" className="rounded-full">
+            <Button onClick={() => paginate(1)} variant="ghost" size="icon" className="rounded-full">
               <ChevronRight className="w-8 h-8" />
             </Button>
         </div>
