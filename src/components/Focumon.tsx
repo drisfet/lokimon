@@ -16,7 +16,7 @@ const WavyPattern = () => (
 )
 
 const FocumonCharacter = ({ focumon, generatedFocumon } : { focumon?: FocumonType, generatedFocumon?: GeneratedFocumon | null }) => {
-    const Icon = focumon ? focumon.icon : Rabbit;
+    const Icon = focumon && !generatedFocumon ? focumon.icon : Rabbit;
     const animationClass = generatedFocumon?.animation?.includes("wag") ? "animate-wag" : "";
     return <Icon className={cn("w-48 h-48 drop-shadow-lg text-card-foreground", animationClass)} />
 }
