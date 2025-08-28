@@ -26,7 +26,7 @@ export default function HomePage() {
               <CardTitle className="font-headline text-lg">Designer</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Create and customize.</p>
+              <p className="text-sm text-muted-foreground">Create and customize your Focumon.</p>
             </CardContent>
           </Card>
         </Link>
