@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Focumon as FocumonType } from "@/lib/focumon";
 import { Rabbit } from "lucide-react";
+import { GeneratedFocumon } from "@/ai/flows/generate-focumon-flow";
 
 const WavyPattern = () => (
     <svg width="100%" height="100%" className="absolute inset-0 opacity-20">
@@ -14,17 +15,18 @@ const WavyPattern = () => (
     </svg>
 )
 
-const FocumonCharacter = ({ focumon } : { focumon?: FocumonType }) => {
+const FocumonCharacter = ({ focumon, generatedFocumon } : { focumon?: FocumonType, generatedFocumon?: GeneratedFocumon | null }) => {
     const Icon = focumon ? focumon.icon : Rabbit;
-    return <Icon className="w-48 h-48 drop-shadow-lg text-card-foreground" />
+    const animationClass = generatedFocumon?.animation?.includes("wag") ? "animate-wag" : "";
+    return <Icon className={cn("w-48 h-48 drop-shadow-lg text-card-foreground", animationClass)} />
 }
 
-export default function Focumon({ focumon } : { focumon?: FocumonType }) {
+export default function Focumon({ focumon, generatedFocumon } : { focumon?: FocumonType, generatedFocumon?: GeneratedFocumon | null }) {
     return (
         <div className="relative aspect-square w-64 bg-primary rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden">
             <WavyPattern />
             <div className="relative z-10">
-                <FocumonCharacter focumon={focumon} />
+                <FocumonCharacter focumon={focumon} generatedFocumon={generatedFocumon}/>
             </div>
         </div>
     )

@@ -31,7 +31,7 @@ const focumonGenerationPrompt = ai.definePrompt({
 
     Prompt: {{{prompt}}}
     
-    Generate a name, a description, a personality, and a simple animation description for this new Focumon. The name should be short, catchy, and unique. The description should be a single sentence that captures its essence.`,
+    Generate a name, a description, a personality, and a simple animation description for this new Focumon. The name should be short, catchy, and unique. The description should be a single sentence that captures its essence. The animation description should be a simple idle animation, for example "Its tail wags slowly".`,
 });
 
 
