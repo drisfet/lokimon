@@ -1,14 +1,16 @@
+
 "use client";
 
 import { useFocusSession } from '@/hooks/useFocusSession';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronLeft, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Focumon from '@/components/Focumon';
 import { getDiscoveredFocumon } from '@/lib/focumon';
 import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
 import { useEffect, useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -20,6 +22,7 @@ export default function FocusPage() {
   const { sessionTime, isRunning, startTimer, stopTimer, completedSessions } = useFocusSession();
   const [generatedFocumon, setGeneratedFocumon] = useState<GeneratedFocumon | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
 
   const discoveredFocumon = getDiscoveredFocumon(completedSessions);
   const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
@@ -28,21 +31,28 @@ export default function FocusPage() {
     setIsLoading(true);
     setGeneratedFocumon(null);
     try {
-      // We are starting the timer immediately for a better user experience,
-      // the focumon generation can happen in the background.
       startTimer();
       const newFocumon = await generateFocumon({ prompt: "a creature that helps with focus" });
       setGeneratedFocumon(newFocumon);
     } catch (error) {
       console.error("Failed to generate Focumon for focus session:", error);
-      // Even if generation fails, the timer is already running.
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Determine which Focumon to display. Prioritize the generated one.
-  const displayFocumon = generatedFocumon ? undefined : latestFocumon;
+  const components = [
+    <GrowingPlant key="plant" isRunning={isRunning} />,
+    <Focumon key="focumon" focumon={latestFocumon} generatedFocumon={generatedFocumon} />
+  ];
+
+  const handleNext = () => {
+    setCurrentComponentIndex((prevIndex) => (prevIndex + 1) % components.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentComponentIndex((prevIndex) => (prevIndex - 1 + components.length) % components.length);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground p-4">
@@ -56,8 +66,19 @@ export default function FocusPage() {
         <div className="w-10"></div>
       </header>
       
-      <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <GrowingPlant isRunning={isRunning} />
+      <div className="flex-1 flex flex-col items-center justify-center gap-8 relative">
+        <div className="relative w-64 h-64 flex items-center justify-center">
+            {components[currentComponentIndex]}
+        </div>
+
+        <div className="absolute inset-x-0 flex items-center justify-between">
+            <Button onClick={handlePrev} variant="ghost" size="icon" className="rounded-full">
+              <ChevronLeft className="w-8 h-8" />
+            </Button>
+            <Button onClick={handleNext} variant="ghost" size="icon" className="rounded-full">
+              <ChevronRight className="w-8 h-8" />
+            </Button>
+        </div>
       </div>
       
       <footer className="w-full flex flex-col items-center gap-4 py-4">
