@@ -83,4 +83,52 @@
     animation: wag 2s ease-in-out infinite;
     transform-origin: 80% 90%;
   }
+
+  /* Initial state for all animated parts */
+  .seed, .sprout, .stem, .leaves {
+    opacity: 0;
+    transform-origin: bottom center;
+  }
+
+  /* The main animation driver */
+  .animate-grow {
+    animation: grow-cycle 30s linear infinite;
+  }
+  
+  .animate-grow .seed { animation: seed-anim 30s linear infinite; }
+  .animate-grow .sprout { animation: sprout-anim 30s linear infinite; }
+  .animate-grow .stem { animation: stem-anim 30s linear infinite; }
+  .animate-grow .leaves { animation: leaves-anim 30s linear infinite; }
+
+
+  /* Keyframes for each part of the plant */
+  @keyframes seed-anim {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    3% { transform: scale(1.2); }
+    5% { opacity: 0; transform: scale(0); }
+    95% { opacity: 0; transform: scale(0); }
+    98% { opacity: 1; transform: scale(1.2); }
+  }
+
+  @keyframes sprout-anim {
+    0%, 5%, 100% { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
+    8% { opacity: 1; stroke-dashoffset: 0; }
+    15% { opacity: 0; }
+  }
+
+  @keyframes stem-anim {
+    0%, 15%, 100% { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
+    18% { opacity: 1; }
+    20% { stroke-dashoffset: 0; }
+    95% { opacity: 1; transform: scaleY(1); }
+    100% { opacity: 0; transform: scaleY(0); }
+  }
+
+  @keyframes leaves-anim {
+    0%, 30%, 100% { opacity: 0; transform: scale(0); }
+    35% { opacity: 1; transform: scale(0.2); }
+    60% { opacity: 1; transform: scale(1); }
+    95% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0); }
+  }
 }

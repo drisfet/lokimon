@@ -8,6 +8,7 @@ import Focumon from '@/components/Focumon';
 import { getDiscoveredFocumon } from '@/lib/focumon';
 import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
 import { useEffect, useState } from 'react';
+import GrowingPlant from '@/components/GrowingPlant';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -27,14 +28,14 @@ export default function FocusPage() {
     setIsLoading(true);
     setGeneratedFocumon(null);
     try {
-      // Use a simple prompt for now. We can make this more complex later.
+      // We are starting the timer immediately for a better user experience,
+      // the focumon generation can happen in the background.
+      startTimer();
       const newFocumon = await generateFocumon({ prompt: "a creature that helps with focus" });
       setGeneratedFocumon(newFocumon);
-      startTimer();
     } catch (error) {
       console.error("Failed to generate Focumon for focus session:", error);
-      // Even if generation fails, start the timer.
-      startTimer();
+      // Even if generation fails, the timer is already running.
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +57,7 @@ export default function FocusPage() {
       </header>
       
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <Focumon focumon={displayFocumon} generatedFocumon={generatedFocumon} />
+        <GrowingPlant isRunning={isRunning} />
       </div>
       
       <footer className="w-full flex flex-col items-center gap-4 py-4">
