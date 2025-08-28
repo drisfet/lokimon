@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useFocusSession } from '@/hooks/useFocusSession';
 import { useEffect, useState } from 'react';
 import { getDiscoveredFocumon } from '@/lib/focumon';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -25,8 +26,7 @@ export default function PortalPage() {
   }, [totalTime, sessionTime]);
 
   const discoveredFocumon = getDiscoveredFocumon(completedSessions);
-  const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
-
+  
   const totalFocusInSeconds = 25 * 60; // Example: 25 minutes goal
   const focusPercentage = Math.min(100, (sessionTime / totalFocusInSeconds) * 100);
 
@@ -39,7 +39,21 @@ export default function PortalPage() {
       </header>
 
       <div className="flex-grow flex items-center justify-center">
-        <Focumon focumon={latestFocumon} />
+        {discoveredFocumon.length > 0 ? (
+          <Carousel className="w-full max-w-xs">
+            <CarouselContent>
+              {discoveredFocumon.map((focumon, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <Focumon focumon={focumon} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        ) : (
+          <Focumon />
+        )}
       </div>
 
       <footer className="w-full flex flex-col items-center gap-4 py-4">

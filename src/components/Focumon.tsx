@@ -16,8 +16,7 @@ const WavyPattern = () => (
 )
 
 const FocumonCharacter = ({ focumon, generatedFocumon } : { focumon?: FocumonType, generatedFocumon?: GeneratedFocumon | null }) => {
-    // If a generated focumon exists, always use the Rabbit icon for now
-    // and apply its animation. Otherwise, use the library focumon's icon.
+    // The AI-generated focumon takes priority for icon and animation
     const Icon = generatedFocumon ? Rabbit : (focumon ? focumon.icon : Rabbit);
     const animationClass = generatedFocumon?.animation?.includes("wag") ? "animate-wag" : "";
     

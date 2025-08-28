@@ -40,6 +40,9 @@ export default function FocusPage() {
     }
   }
 
+  // Determine which Focumon to display. Prioritize the generated one.
+  const displayFocumon = generatedFocumon ? undefined : latestFocumon;
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground p-4">
        <header className="flex items-center justify-between">
@@ -53,7 +56,7 @@ export default function FocusPage() {
       </header>
       
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <Focumon focumon={latestFocumon} generatedFocumon={generatedFocumon} />
+        <Focumon focumon={displayFocumon} generatedFocumon={generatedFocumon} />
       </div>
       
       <footer className="w-full flex flex-col items-center gap-4 py-4">
