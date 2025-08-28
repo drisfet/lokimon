@@ -10,6 +10,7 @@ import { getDiscoveredFocumon } from '@/lib/focumon';
 import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
 import { useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
+import FlappyFocumon from '@/components/FlappyFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function formatTime(seconds: number) {
@@ -64,6 +65,7 @@ export default function FocusPage() {
   }
 
   const components = [
+    <FlappyFocumon key="flappy" isRunning={isRunning} />,
     <GrowingPlant key="plant" isRunning={isRunning} />,
     <Focumon key="focumon" focumon={latestFocumon} generatedFocumon={generatedFocumon} />
   ];
@@ -99,7 +101,7 @@ export default function FocusPage() {
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 }
             }}
-            className="absolute w-64 h-64 flex items-center justify-center"
+            className="absolute w-full h-full flex items-center justify-center"
           >
             {components[componentIndex]}
           </motion.div>
