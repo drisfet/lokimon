@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import { useFocusSession } from '@/hooks/useFocusSession';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,13 @@ import { useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
-import AutonomousFocumon from '@/components/AutonomousFocumon';
+import dynamic from 'next/dynamic';
+
+const AutonomousFocumon = dynamic(() => import('@/components/AutonomousFocumon'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>
+});
+
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');

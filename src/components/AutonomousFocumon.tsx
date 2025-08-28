@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Stage, Sprite, useTick } from '@pixi/react';
-import { BlurFilter } from 'pixi.js';
 
 const STAGE_WIDTH = 500;
 const STAGE_HEIGHT = 500;
@@ -64,12 +63,6 @@ const FocumonCharacter = ({ isRunning }: { isRunning: boolean }) => {
 };
 
 export default function AutonomousFocumon({ isRunning }: { isRunning: boolean }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   return (
     <div
       className="relative w-full h-full bg-primary/20 overflow-hidden"
@@ -81,15 +74,13 @@ export default function AutonomousFocumon({ isRunning }: { isRunning: boolean })
         aspectRatio: `${STAGE_WIDTH}/${STAGE_HEIGHT}`
       }}
     >
-      {isClient && (
-        <Stage
-          width={STAGE_WIDTH}
-          height={STAGE_HEIGHT}
-          options={{ backgroundAlpha: 0 }}
-        >
-          <FocumonCharacter isRunning={isRunning} />
-        </Stage>
-      )}
+      <Stage
+        width={STAGE_WIDTH}
+        height={STAGE_HEIGHT}
+        options={{ backgroundAlpha: 0 }}
+      >
+        <FocumonCharacter isRunning={isRunning} />
+      </Stage>
        { !isRunning && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
           <p className="font-headline text-2xl text-white text-center">
