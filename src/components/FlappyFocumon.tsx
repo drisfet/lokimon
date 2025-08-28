@@ -35,7 +35,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
     setScore(0);
     setPipes([
       { x: GAME_WIDTH, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
-      { x: GAME_WIDTH + GAME_WIDTH / 2, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
+      { x: GAME_WIDTH + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
     ]);
   };
 
@@ -53,67 +53,80 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
   }, [isRunning, gameState]);
 
   const gameLoop = () => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing') {
+       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
+       return;
+    };
 
     // Focumon physics
-    let newVelocity = focumonVelocity + GRAVITY;
-    let newPosition = focumonPosition + newVelocity;
-    
-    // Collision with ground
-    if (newPosition > GAME_HEIGHT - FOCUMON_SIZE) {
-      newPosition = GAME_HEIGHT - FOCUMON_SIZE;
-      setGameState('gameOver');
-    }
-    // Collision with ceiling
-    if (newPosition < 0) {
-      newPosition = 0;
-      newVelocity = 0;
-    }
+    setFocumonVelocity(v => {
+      const newVelocity = v + GRAVITY;
+      setFocumonPosition(p => {
+        const newPosition = p + newVelocity;
+        
+        // Collision with ground
+        if (newPosition > GAME_HEIGHT - FOCUMON_SIZE) {
+          setGameState('gameOver');
+          return GAME_HEIGHT - FOCUMON_SIZE;
+        }
+        // Collision with ceiling
+        if (newPosition < 0) {
+          setFocumonVelocity(0);
+          return 0;
+        }
 
-    setFocumonVelocity(newVelocity);
-    setFocumonPosition(newPosition);
-    controls.start({ y: newPosition, transition: { duration: 0.05, ease: 'linear' } });
-
+        return newPosition;
+      });
+      return newVelocity;
+    });
 
     // Pipe logic
-    let newPipes = pipes.map(pipe => ({ ...pipe, x: pipe.x - PIPE_SPEED }));
-    let newScore = score;
     let passedPipe = false;
-
-    // Check for collision with pipes
-    const focumonRect = { x: GAME_WIDTH / 4, y: newPosition, width: FOCUMON_SIZE, height: FOCUMON_SIZE };
-    for (const pipe of newPipes) {
-        const topPipeRect = { x: pipe.x, y: 0, width: PIPE_WIDTH, height: pipe.topHeight };
-        const bottomPipeRect = { x: pipe.x, y: pipe.topHeight + PIPE_GAP, width: PIPE_WIDTH, height: GAME_HEIGHT };
-
-        const collides = (focumonRect.x < pipe.x + PIPE_WIDTH &&
-                        focumonRect.x + focumonRect.width > pipe.x &&
-                        (focumonRect.y < topPipeRect.height || focumonRect.y + focumonRect.height > bottomPipeRect.y));
+    setPipes(currentPipes => {
+        let newPipes = currentPipes.map(pipe => ({ ...pipe, x: pipe.x - PIPE_SPEED }));
         
-        if (collides) {
-            setGameState('gameOver');
-            break;
+        // Check for collision
+        const focumonRect = { x: GAME_WIDTH / 4, y: focumonPosition, width: FOCUMON_SIZE, height: FOCUMON_SIZE };
+        for (const pipe of newPipes) {
+            const topPipeRect = { x: pipe.x, y: 0, width: PIPE_WIDTH, height: pipe.topHeight };
+            const bottomPipeRect = { x: pipe.x, y: pipe.topHeight + PIPE_GAP, width: PIPE_WIDTH, height: GAME_HEIGHT };
+
+            const collides = (focumonRect.x < pipe.x + PIPE_WIDTH &&
+                            focumonRect.x + focumonRect.width > pipe.x &&
+                            (focumonRect.y < topPipeRect.height || focumonRect.y + focumonRect.height > bottomPipeRect.y));
+            
+            if (collides) {
+                setGameState('gameOver');
+                break;
+            }
+
+            // Score
+            if (pipe.x + PIPE_WIDTH < focumonRect.x && !pipe.passed) {
+              pipe.passed = true;
+              passedPipe = true;
+            }
         }
 
-        // Score
-        if (pipe.x + PIPE_WIDTH < focumonRect.x && !pipe.passed) {
-          pipe.passed = true;
-          newScore++;
-          setScore(newScore);
+        if (passedPipe) {
+          setScore(s => s + 1);
         }
-    }
 
+        // Add new pipes and remove old ones
+        if (newPipes.length > 0 && newPipes[0].x < -PIPE_WIDTH) {
+            newPipes.shift();
+            const lastPipe = newPipes[newPipes.length - 1];
+            newPipes.push({ x: (lastPipe?.x || GAME_WIDTH) + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 });
+        }
+        
+        return newPipes;
+    });
 
-    // Add new pipes and remove old ones
-    if (newPipes[0] && newPipes[0].x < -PIPE_WIDTH) {
-        newPipes.shift();
-        const lastPipe = newPipes[newPipes.length - 1];
-        newPipes.push({ x: lastPipe.x + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 });
-    }
-
-    setPipes(newPipes);
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   };
+  
+  useEffect(() => {
+    controls.start({ y: focumonPosition, transition: { duration: 0, ease: 'linear' } });
+  }, [focumonPosition, controls]);
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -124,14 +137,17 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
     return () => {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState]);
 
   const handleTap = () => {
     if (gameState === 'playing') {
       setFocumonVelocity(-JUMP_STRENGTH);
-    } else if (gameState === 'gameOver' || gameState === 'waiting' && isRunning) {
+    } else if (gameState === 'gameOver' && isRunning) {
       resetGame();
       setGameState('playing');
+    } else if (gameState === 'waiting' && isRunning) {
+        setGameState('playing');
     }
   };
 
@@ -162,6 +178,12 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
 
       {pipes.map((pipe, i) => (
         <motion.div key={i} className="absolute"
+            style={{
+                left: 0,
+                top: 0,
+                width: PIPE_WIDTH,
+                height: GAME_HEIGHT,
+            }}
             initial={{x: pipe.x}}
             animate={{x: pipe.x}}
             transition={{duration: 0.05, ease: 'linear'}}
@@ -185,17 +207,19 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         </motion.div>
       ))}
 
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 font-headline text-5xl text-white text-stroke-black">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 font-headline text-5xl text-white text-stroke-black z-20">
         {score}
       </div>
 
-      {(gameState === 'waiting' && isRunning) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <p className="font-headline text-2xl text-white text-center">Tap to Start</p>
+      {(!isRunning || (gameState === 'waiting' && isRunning)) && gameState !== 'gameOver' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
+          <p className="font-headline text-2xl text-white text-center">
+            {isRunning ? "Tap to Start" : "Start Focus to Play"}
+          </p>
         </div>
       )}
       {gameState === 'gameOver' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50" onClick={handleTap}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-30" onClick={handleTap}>
             <p className="font-headline text-4xl text-white">Game Over</p>
             <p className="font-headline text-xl text-white mt-4">Tap to Retry</p>
         </div>
