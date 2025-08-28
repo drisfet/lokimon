@@ -9,10 +9,10 @@ import { Rabbit } from 'lucide-react';
 const GAME_WIDTH = 500;
 const GAME_HEIGHT = 730;
 const FOCUMON_SIZE = 40;
-const GRAVITY = 0.5;
-const JUMP_STRENGTH = 10;
+const GRAVITY = 0.4;
+const JUMP_STRENGTH = 8;
 const PIPE_WIDTH = 60;
-const PIPE_GAP = 200;
+const PIPE_GAP = 250;
 const PIPE_SPEED = 3;
 
 type GameState = 'waiting' | 'playing' | 'gameOver';
