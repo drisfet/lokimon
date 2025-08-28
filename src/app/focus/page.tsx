@@ -12,6 +12,7 @@ import { useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
+import AutonomousFocumon from '@/components/AutonomousFocumon';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -65,6 +66,7 @@ export default function FocusPage() {
   }
 
   const components = [
+    <AutonomousFocumon key="autonomous" isRunning={isRunning} />,
     <FlappyFocumon key="flappy" isRunning={isRunning} />,
     <GrowingPlant key="plant" isRunning={isRunning} />,
     <Focumon key="focumon" focumon={latestFocumon} generatedFocumon={generatedFocumon} />
