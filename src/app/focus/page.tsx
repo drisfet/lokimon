@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import Focumon from '@/components/Focumon';
 import { getDiscoveredFocumon } from '@/lib/focumon';
+import { GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
+import { useEffect, useState } from 'react';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -15,6 +17,19 @@ function formatTime(seconds: number) {
 
 export default function FocusPage() {
   const { sessionTime, isRunning, startTimer, stopTimer, completedSessions } = useFocusSession();
+  const [generatedFocumon, setGeneratedFocumon] = useState<GeneratedFocumon | null>(null);
+
+  // This is a placeholder for a real AI-generated Focumon.
+  // In a real scenario, this would be fetched when a session starts.
+  useEffect(() => {
+    setGeneratedFocumon({
+      name: "Focus Fluff",
+      description: "A creature that thrives on concentration.",
+      personality: "Calm and observant",
+      animation: "Its tail wags slowly"
+    });
+  }, []);
+
 
   const discoveredFocumon = getDiscoveredFocumon(completedSessions);
   const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
@@ -32,7 +47,7 @@ export default function FocusPage() {
       </header>
       
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
-        <Focumon focumon={latestFocumon} />
+        <Focumon focumon={latestFocumon} generatedFocumon={generatedFocumon} />
       </div>
       
       <footer className="w-full flex flex-col items-center gap-4 py-4">
