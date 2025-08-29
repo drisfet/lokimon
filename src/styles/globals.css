@@ -1,9 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     margin: 0;
     padding: 0;
     color: rgba(255, 255, 255, 0.87);
-    background-color: #000000; 
+    background-color: #000000;
     font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
 }
 
 #app {
@@ -18,6 +23,16 @@ body {
 .spritePosition {
     margin: 10px 0 0 10px;
     font-size: 0.8em;
+}
+
+.control-buttons {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
 }
 
 .button {
@@ -46,3 +61,51 @@ body {
         color: rgba(255, 255, 255, 0.3);
     }
 }
+
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transform transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-teal-500 text-white px-6 py-3 rounded-lg transform transition-all duration-200 hover:bg-teal-600 hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center;
+  }
+}
+/* LOKIMON Specific Styles */
+.portal-container {
+    background: linear-gradient(135deg, #26a69a 0%, #00897b 100%);
+    min-height: 60vh;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    animation: wave 20s linear infinite;
+}
+
+@keyframes wave {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(-25px) translateY(-25px); }
+    100% { transform: translateX(-50px) translateY(-50px); }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .portal-container {
+        min-height: 70vh;
+        max-width: 5xl;
+    }
+}
+
+/* Pixel Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');

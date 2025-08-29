@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
+import Link from 'next/link';
 
 function App()
 {
@@ -14,7 +15,7 @@ function App()
     const changeScene = () => {
 
         if(phaserRef.current)
-        {     
+        {
             const scene = phaserRef.current.scene as MainMenu;
             
             if (scene)
@@ -73,6 +74,11 @@ function App()
         }
     }
 
+    const startGame = () => {
+        // Navigate to the portal page
+        window.location.href = '/portal';
+    }
+
     // Event emitted from the PhaserGame component
     const currentScene = (scene: Phaser.Scene) => {
 
@@ -83,19 +89,22 @@ function App()
     return (
         <div id="app">
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
-            <div>
+            <div className="control-buttons">
                 <div>
                     <button className="button" onClick={changeScene}>Change Scene</button>
                 </div>
                 <div>
                     <button disabled={canMoveSprite} className="button" onClick={moveSprite}>Toggle Movement</button>
                 </div>
-                <div className="spritePosition">Sprite Position:
-                    <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
-                </div>
                 <div>
                     <button className="button" onClick={addSprite}>Add New Sprite</button>
                 </div>
+                <div>
+                    <button className="button" onClick={startGame}>Start</button>
+                </div>
+            </div>
+            <div className="spritePosition">Sprite Position:
+                <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
             </div>
         </div>
     )

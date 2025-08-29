@@ -1,0 +1,29 @@
+{
+  "name": "LOKIMON",
+  "short_name": "LOKIMON",
+  "description": "Transform your focus sessions into an epic idle RPG adventure",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#26a69a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "categories": ["games", "productivity", "entertainment"],
+  "lang": "en"
+}
