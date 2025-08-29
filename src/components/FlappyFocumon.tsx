@@ -9,8 +9,8 @@ import { Rabbit } from 'lucide-react';
 const GAME_WIDTH = 500;
 const GAME_HEIGHT = 730;
 const FOCUMON_SIZE = 40;
-const GRAVITY = 0.4;
-const JUMP_STRENGTH = 8;
+const GRAVITY = 0.5;
+const JUMP_STRENGTH = 9;
 const PIPE_WIDTH = 60;
 const PIPE_GAP = 250;
 const PIPE_SPEED = 3;
@@ -65,13 +65,14 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       const nextPipe = pipes.find(p => p.x + PIPE_WIDTH > GAME_WIDTH / 4 - FOCUMON_SIZE / 2);
       if (nextPipe) {
         const pipeGapCenter = nextPipe.topHeight + PIPE_GAP / 2;
-        // Add a small buffer to make it look smoother
-        const safeZoneTop = pipeGapCenter - 30;
-
-        // If Focumon is falling below the safe zone, jump!
-        if (focumonPosition > safeZoneTop && focumonVelocity > 0) {
+        
+        // If the focumon is below the center of the gap, jump. Otherwise, let it fall.
+        if (focumonPosition > pipeGapCenter) {
            setFocumonVelocity(-JUMP_STRENGTH);
         }
+      } else if (focumonPosition > GAME_HEIGHT / 2.5) {
+        // If there are no pipes, try to stay in the middle
+        setFocumonVelocity(-JUMP_STRENGTH);
       }
     }
 
@@ -143,7 +144,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
   };
   
   useEffect(() => {
-    controls.start({ y: focumonPosition, transition: { duration: 0, ease: 'linear' } });
+    controls.start({ y: focumonPosition, transition: { duration: 0.1, ease: 'linear' } });
   }, [focumonPosition, controls]);
 
   useEffect(() => {
@@ -202,20 +203,17 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       {pipes.map((pipe, i) => (
         <motion.div key={i} className="absolute"
             style={{
-                left: 0,
+                left: pipe.x,
                 top: 0,
                 width: PIPE_WIDTH,
                 height: GAME_HEIGHT,
             }}
-            initial={{x: pipe.x}}
-            animate={{x: pipe.x}}
-            transition={{duration: 0.05, ease: 'linear'}}
         >
           <div
             className="absolute bg-green-500 border-2 border-green-700"
             style={{
               top: 0,
-              width: PIPE_WIDTH,
+              width: '100%',
               height: pipe.topHeight,
             }}
           />
@@ -223,7 +221,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
             className="absolute bg-green-500 border-2 border-green-700"
             style={{
               top: pipe.topHeight + PIPE_GAP,
-              width: PIPE_WIDTH,
+              width: '100%',
               height: GAME_HEIGHT - (pipe.topHeight + PIPE_GAP),
             }}
           />
@@ -235,7 +233,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       </div>
 
        {isAiControlled && gameState === 'playing' && (
-         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 font-headline text-lg text-white z-20 bg-black/50 px-4 py-2 rounded-lg">
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-headline text-sm text-white z-20 bg-black/40 px-3 py-1 rounded-md">
            AI is playing... Tap to take over!
          </div>
        )}
