@@ -4,6 +4,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { Rabbit } from 'lucide-react';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
 
 // Game constants
 const GAME_WIDTH = 500;
@@ -38,7 +40,6 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       { x: GAME_WIDTH, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
       { x: GAME_WIDTH + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
     ]);
-    setIsAiControlled(true); // AI is in control on reset
   };
 
   useEffect(() => {
@@ -66,11 +67,12 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       if (nextPipe) {
         const pipeGapCenter = nextPipe.topHeight + PIPE_GAP / 2;
         
-        // If the focumon is below the center of the gap, jump. Otherwise, let it fall.
-        if (focumonPosition > pipeGapCenter) {
+        // If the focumon is falling and is below the center of the gap, jump.
+        // The threshold (e.g., 20) prevents spam-jumping at the top.
+        if (focumonPosition > pipeGapCenter + 20 && focumonVelocity > 0) {
            setFocumonVelocity(-JUMP_STRENGTH);
         }
-      } else if (focumonPosition > GAME_HEIGHT / 2.5) {
+      } else if (focumonPosition > GAME_HEIGHT / 2.5 && focumonVelocity > 0) {
         // If there are no pipes, try to stay in the middle
         setFocumonVelocity(-JUMP_STRENGTH);
       }
@@ -157,27 +159,28 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, isAiControlled]); // Rerun effect if AI control changes
+  }, [gameState, isAiControlled]);
 
-  const handleTap = () => {
-    // First tap by user takes control from AI
-    if (isAiControlled) {
-        setIsAiControlled(false);
-    }
+  const handleManualTap = () => {
+    if (isAiControlled) return; // Ignore taps if AI is on
 
     if (gameState === 'playing') {
       setFocumonVelocity(-JUMP_STRENGTH);
-    } else if (gameState === 'gameOver' && isRunning) {
-      resetGame();
-      setGameState('playing');
     } else if (gameState === 'waiting' && isRunning) {
         setGameState('playing');
     }
   };
 
+  const handleRestart = () => {
+    if (gameState === 'gameOver' && isRunning) {
+      resetGame();
+      setGameState('playing');
+    }
+  };
+
   return (
     <div
-      className="relative w-full h-full bg-primary/20 overflow-hidden cursor-pointer"
+      className="relative w-full h-full bg-primary/20 overflow-hidden"
       style={{
         width: `${GAME_WIDTH}px`,
         height: `${GAME_HEIGHT}px`,
@@ -185,7 +188,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         maxHeight: '100%',
         aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}`
       }}
-      onClick={handleTap}
+      onClick={handleManualTap}
     >
       <motion.div
         className="absolute z-10"
@@ -232,21 +235,24 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         {score}
       </div>
 
-       {isAiControlled && gameState === 'playing' && (
-         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-headline text-sm text-white z-20 bg-black/40 px-3 py-1 rounded-md">
-           AI is playing... Tap to take over!
-         </div>
-       )}
+       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 font-headline text-sm text-white z-20 bg-black/40 px-3 py-2 rounded-md">
+           <Switch
+            id="ai-mode"
+            checked={isAiControlled}
+            onCheckedChange={setIsAiControlled}
+           />
+           <Label htmlFor="ai-mode">AI Autoplay</Label>
+       </div>
 
       {(!isRunning || (gameState === 'waiting' && isRunning)) && gameState !== 'gameOver' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
           <p className="font-headline text-2xl text-white text-center">
-            {isRunning ? "Tap to Start" : "Start Focus to Play"}
+            {isRunning ? (isAiControlled ? "AI is playing..." : "Tap to Start") : "Start Focus to Play"}
           </p>
         </div>
       )}
       {gameState === 'gameOver' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-30" onClick={handleTap}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-30 cursor-pointer" onClick={handleRestart}>
             <p className="font-headline text-4xl text-white">Game Over</p>
             <p className="font-headline text-xl text-white mt-4">Tap to Retry</p>
         </div>
