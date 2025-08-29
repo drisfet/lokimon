@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Focumon from '@/components/Focumon';
 import { getDiscoveredFocumon } from '@/lib/focumon';
 import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-flow';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
 import AutonomousFocumon from '@/components/AutonomousFocumon';
