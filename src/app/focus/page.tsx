@@ -11,14 +11,8 @@ import { generateFocumon, GeneratedFocumon } from '@/ai/flows/generate-focumon-f
 import { useState, useEffect } from 'react';
 import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
+import AutonomousFocumon from '@/components/AutonomousFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
-import dynamic from 'next/dynamic';
-
-const AutonomousFocumon = dynamic(() => import('@/components/AutonomousFocumon'), { 
-  ssr: false,
-  loading: () => <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-16 h-16 animate-spin" /></div>
-});
-
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -53,11 +47,6 @@ export default function FocusPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [[page, direction], setPage] = useState([0, 0]);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const discoveredFocumon = getDiscoveredFocumon(completedSessions);
   const latestFocumon = discoveredFocumon[discoveredFocumon.length - 1];
@@ -77,7 +66,7 @@ export default function FocusPage() {
   }
 
   const components = [
-    ...(isClient ? [<AutonomousFocumon key="autonomous" isRunning={isRunning} />] : []),
+    <AutonomousFocumon key="autonomous" isRunning={isRunning} />,
     <FlappyFocumon key="flappy" isRunning={isRunning} />,
     <GrowingPlant key="plant" isRunning={isRunning} />,
     <Focumon key="focumon" focumon={latestFocumon} generatedFocumon={generatedFocumon} />

@@ -1,107 +1,66 @@
-
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Stage, Sprite } from '@pixi/react';
+import { motion, useAnimation } from 'framer-motion';
+import { Rabbit } from 'lucide-react';
+import { useEffect } from 'react';
 
-const STAGE_WIDTH = 500;
-const STAGE_HEIGHT = 500;
+const CONTAINER_WIDTH = 400;
+const CONTAINER_HEIGHT = 400;
+const FOCUMON_SIZE = 60;
 
-interface Motion {
-  x: number;
-  y: number;
-}
-
-const FocumonCharacter = ({ isRunning }: { isRunning: boolean }) => {
-  const [position, setPosition] = useState<Motion>({ x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2 });
-  const [target, setTarget] = useState<Motion>({ x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2 });
-  const [motion, setMotion] = useState<Motion>({ x: 0, y: 0 });
-  const animationFrameId = useRef<number | null>(null);
-  const lastTargetChange = useRef(Date.now());
-  const lastPosition = useRef(position);
-
+const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
+  const controls = useAnimation();
 
   useEffect(() => {
-    lastPosition.current = position;
-  }, [position])
-
-  const animate = () => {
-    if (!isRunning) {
-        animationFrameId.current = requestAnimationFrame(animate);
-        return;
-    }
-
-    const now = Date.now();
-    if (now - lastTargetChange.current > 3000) { // Change target every 3 seconds
-      setTarget({
-        x: Math.random() * STAGE_WIDTH,
-        y: Math.random() * STAGE_HEIGHT,
+    if (isRunning) {
+      const wander = () => {
+        controls.start({
+          x: Math.random() * (CONTAINER_WIDTH - FOCUMON_SIZE),
+          y: Math.random() * (CONTAINER_HEIGHT - FOCUMON_SIZE),
+          scaleX: Math.random() > 0.5 ? 1 : -1,
+          transition: {
+            duration: Math.random() * 3 + 2, // Slower, more natural movement
+            ease: 'easeInOut',
+          },
+        }).then(wander); // Chain the next movement
+      };
+      wander();
+    } else {
+      // When not running, stop all animations and center the Focumon
+      controls.stop();
+      controls.start({
+        x: (CONTAINER_WIDTH - FOCUMON_SIZE) / 2,
+        y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
+        scaleX: 1,
+        transition: { duration: 0.5 }
       });
-      lastTargetChange.current = now;
-    }
-
-    // Move towards target
-    const currentPosition = lastPosition.current;
-    const dx = target.x - currentPosition.x;
-    const dy = target.y - currentPosition.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > 1) {
-      const speed = 0.5;
-      const moveX = (dx / distance) * speed;
-      const moveY = (dy / distance) * speed;
-      
-      setPosition(prev => ({
-        x: prev.x + moveX,
-        y: prev.y + moveY
-      }));
-      setMotion({x: moveX, y: moveY});
     }
     
-    animationFrameId.current = requestAnimationFrame(animate);
-  };
+    return () => controls.stop();
+  }, [isRunning, controls]);
 
-  useEffect(() => {
-    animationFrameId.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning, target]);
-
-  return (
-    <Sprite
-      image="https://picsum.photos/100/100"
-      data-ai-hint="cute monster"
-      x={position.x}
-      y={position.y}
-      anchor={{ x: 0.5, y: 0.5 }}
-      scale={{x: motion.x > 0 ? 1 : -1, y: 1}}
-    />
-  );
-};
-
-export default function AutonomousFocumon({ isRunning }: { isRunning: boolean }) {
   return (
     <div
-      className="relative w-full h-full bg-primary/20 overflow-hidden"
-       style={{
-        width: `${STAGE_WIDTH}px`,
-        height: `${STAGE_HEIGHT}px`,
+      className="relative bg-primary/20 overflow-hidden"
+      style={{
+        width: `${CONTAINER_WIDTH}px`,
+        height: `${CONTAINER_HEIGHT}px`,
         maxWidth: '100%',
         maxHeight: '100%',
-        aspectRatio: `${STAGE_WIDTH}/${STAGE_HEIGHT}`
+        aspectRatio: `${CONTAINER_WIDTH}/${CONTAINER_HEIGHT}`,
       }}
     >
-      <Stage
-        width={STAGE_WIDTH}
-        height={STAGE_HEIGHT}
-        options={{ backgroundAlpha: 0 }}
+      <motion.div
+        animate={controls}
+        initial={{
+          x: (CONTAINER_WIDTH - FOCUMON_SIZE) / 2,
+          y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
+        }}
+        className="absolute"
+        style={{ width: FOCUMON_SIZE, height: FOCUMON_SIZE }}
       >
-        <FocumonCharacter isRunning={isRunning} />
-      </Stage>
+        <Rabbit className="w-full h-full text-accent drop-shadow-lg" />
+      </motion.div>
        { !isRunning && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
           <p className="font-headline text-2xl text-white text-center">
@@ -111,4 +70,6 @@ export default function AutonomousFocumon({ isRunning }: { isRunning: boolean })
       )}
     </div>
   );
-}
+};
+
+export default AutonomousFocumon;
