@@ -14,7 +14,7 @@ import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
 import AutonomousFocumon from '@/components/AutonomousFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
-import PixelFocumon from '@/components/PixelFocumon';
+import PixiApp from '@/components/PixiApp';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -68,7 +68,7 @@ export default function FocusPage() {
   }
 
   const components = [
-    <PixelFocumon key="pixel" />,
+    <PixiApp key="pixi" />,
     <AutonomousFocumon key="autonomous" isRunning={isRunning} />,
     <FlappyFocumon key="flappy" isRunning={isRunning} />,
     <GrowingPlant key="plant" isRunning={isRunning} />,

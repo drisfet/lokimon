@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Sprite, useTick } from '@pixi/react';
