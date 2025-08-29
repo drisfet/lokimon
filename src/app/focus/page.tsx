@@ -13,11 +13,7 @@ import GrowingPlant from '@/components/GrowingPlant';
 import FlappyFocumon from '@/components/FlappyFocumon';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
-
-const AutonomousFocumon = dynamic(() => import('@/components/AutonomousFocumon'), {
-  ssr: false,
-  loading: () => <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>
-});
+import AutonomousFocumon from '@/components/AutonomousFocumon';
 
 
 function formatTime(seconds: number) {

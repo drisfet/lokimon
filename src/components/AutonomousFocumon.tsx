@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Stage, Sprite, useTick } from '@pixi/react';
+import { Stage, Sprite } from '@pixi/react';
 
 const STAGE_WIDTH = 500;
 const STAGE_HEIGHT = 500;
@@ -13,42 +13,63 @@ interface Motion {
 }
 
 const FocumonCharacter = ({ isRunning }: { isRunning: boolean }) => {
-  const [motion, setMotion] = useState<Motion>({ x: 0, y: 0 });
-  const [target, setTarget] = useState<Motion>({ x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2 });
   const [position, setPosition] = useState<Motion>({ x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2 });
-  const iter = useRef(0);
+  const [target, setTarget] = useState<Motion>({ x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2 });
+  const [motion, setMotion] = useState<Motion>({ x: 0, y: 0 });
+  const animationFrameId = useRef<number | null>(null);
+  const lastTargetChange = useRef(Date.now());
+  const lastPosition = useRef(position);
 
-  useTick((delta) => {
-    if (!isRunning) return;
 
-    iter.current += delta;
+  useEffect(() => {
+    lastPosition.current = position;
+  }, [position])
 
-    // Change target position every ~3 seconds
-    if (iter.current > 180) {
+  const animate = () => {
+    if (!isRunning) {
+        animationFrameId.current = requestAnimationFrame(animate);
+        return;
+    }
+
+    const now = Date.now();
+    if (now - lastTargetChange.current > 3000) { // Change target every 3 seconds
       setTarget({
         x: Math.random() * STAGE_WIDTH,
         y: Math.random() * STAGE_HEIGHT,
       });
-      iter.current = 0;
+      lastTargetChange.current = now;
     }
 
     // Move towards target
-    const dx = target.x - position.x;
-    const dy = target.y - position.y;
+    const currentPosition = lastPosition.current;
+    const dx = target.x - currentPosition.x;
+    const dy = target.y - currentPosition.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > 1) {
       const speed = 0.5;
-      const moveX = (dx / distance) * speed * delta;
-      const moveY = (dy / distance) * speed * delta;
+      const moveX = (dx / distance) * speed;
+      const moveY = (dy / distance) * speed;
       
       setPosition(prev => ({
         x: prev.x + moveX,
         y: prev.y + moveY
       }));
-      setMotion({x: moveX, y: moveY})
+      setMotion({x: moveX, y: moveY});
     }
-  });
+    
+    animationFrameId.current = requestAnimationFrame(animate);
+  };
+
+  useEffect(() => {
+    animationFrameId.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRunning, target]);
 
   return (
     <Sprite
