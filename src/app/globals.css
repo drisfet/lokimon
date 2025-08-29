@@ -1,139 +1,25 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 197 100% 45%;
-    --primary-foreground: 197 100% 95%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 74 100% 50%;
-    --accent-foreground: 74 100% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 197 100% 45%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 0 0% 10%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 197 100% 45%;
-    --primary-foreground: 197 100% 95%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 74 100% 50%;
-    --accent-foreground: 74 100% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 197 100% 45%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: #0a0a0a;
+    --foreground: #ededed;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  .text-stroke-black {
-      text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-  }
-  
-  @keyframes wag {
-    0%,
-    100% {
-      transform: rotate(-5deg);
-    }
-    50% {
-      transform: rotate(5deg);
-    }
-  }
-
-  .animate-wag {
-    animation: wag 2s ease-in-out infinite;
-    transform-origin: 80% 90%;
-  }
-
-  /* Initial state for all animated parts */
-  .seed, .sprout, .stem, .leaves {
-    opacity: 0;
-    transform-origin: bottom center;
-  }
-
-  /* The main animation driver */
-  .animate-grow {
-    animation: grow-cycle 30s linear infinite;
-  }
-  
-  .animate-grow .seed { animation: seed-anim 30s linear infinite; }
-  .animate-grow .sprout { animation: sprout-anim 30s linear infinite; }
-  .animate-grow .stem { animation: stem-anim 30s linear infinite; }
-  .animate-grow .leaves { animation: leaves-anim 30s linear infinite; }
-
-
-  /* Keyframes for each part of the plant */
-  @keyframes seed-anim {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    3% { transform: scale(1.2); }
-    5% { opacity: 0; transform: scale(0); }
-    95% { opacity: 0; transform: scale(0); }
-    98% { opacity: 1; transform: scale(1.2); }
-  }
-
-  @keyframes sprout-anim {
-    0%, 5%, 100% { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
-    8% { opacity: 1; stroke-dashoffset: 0; }
-    15% { opacity: 0; }
-  }
-
-  @keyframes stem-anim {
-    0%, 15%, 100% { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
-    18% { opacity: 1; }
-    20% { stroke-dashoffset: 0; }
-    95% { opacity: 1; transform: scaleY(1); }
-    100% { opacity: 0; transform: scaleY(0); }
-  }
-
-  @keyframes leaves-anim {
-    0%, 30%, 100% { opacity: 0; transform: scale(0); }
-    35% { opacity: 1; transform: scale(0.2); }
-    60% { opacity: 1; transform: scale(1); }
-    95% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0); }
-  }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
 }
