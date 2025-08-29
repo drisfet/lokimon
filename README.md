@@ -12,6 +12,10 @@ This is a Next.js application that creates a gamified focus experience called "F
 
 To achieve high-fidelity, game-like graphics and animations, this project uses `pixi.js` with the `@pixi/react` library. This allows for powerful, hardware-accelerated 2D rendering directly within our React components.
 
+**Important**: Ensure you use compatible versions of `pixi.js` and `@pixi/react`. The current stable combination for this project is:
+- `pixi.js`: `8.1.5`
+- `@pixi/react`: `7.1.2`
+
 ### Core Concepts
 
 1.  **The `<Application />` Component**: As per the official `@pixi/react` documentation, the root of any Pixi scene is the `<Application />` component. This component creates the main canvas element and provides the context for all other Pixi elements.
