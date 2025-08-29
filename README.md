@@ -2,48 +2,77 @@
 
 This is a Next.js application that creates a gamified focus experience called "Focumon Focus". It's built using Next.js, React, Tailwind CSS, and Genkit for AI-powered features.
 
-## Current Features
+## AI-Powered Features
 
-*   **Focus Timer**: A core feature allowing users to start and stop focus sessions to track their productivity.
-*   **Focumon Collection**: Users can discover and collect Focumon creatures as they complete more focus sessions.
-*   **Dynamic Pages**: The app includes pages for a central portal, a Focumon library, a user party, a profile, and daily quests.
-*   **AI-Powered Focumon Generation**: A "Designer" page (`/designer`) uses Google's Gemini model via Genkit to generate new Focumon, including their name, description, personality, and even suggested animations.
+*   **Focumon Generation**: A "Designer" page (`/designer`) uses Google's Gemini model via Genkit to generate new Focumon, including their name, description, personality, and even suggested animations.
+*   **Dynamic Storytelling**: During a focus session, an AI flow can generate events, like a new plant growing, to create a more dynamic and engaging environment.
+*   **Generative UI**: The AI can directly influence the behavior of UI components, such as defining a Focumon's idle animation or having an AI agent play a minigame.
 
-## Configuring AI-Driven UI Behavior
+## Using PixiJS for High-Fidelity Graphics
 
-A key feature of this application is its implementation of a basic "Generative UI," where the AI can directly influence the behavior of the UI components. This creates a more dynamic and unpredictable experience for the user.
+To achieve high-fidelity, game-like graphics and animations, this project uses `pixi.js` with the `@pixi/react` library. This allows for powerful, hardware-accelerated 2D rendering directly within our React components.
 
-Here’s how it works:
+### Core Concepts
 
-1.  **AI Generates Behavior in a Flow**: The Genkit flow located at `src/ai/flows/generate-focumon-flow.ts` defines the structure of a generated Focumon. We've added an `animation` field to its output schema (`GeneratedFocumonSchema`). When called, the AI prompt instructs the model to provide a simple idle animation description (e.g., "Its tail wags slowly").
-
-    ```typescript
-    // in src/ai/flows/generate-focumon-flow.ts
-    const GeneratedFocumonSchema = z.object({
-      // ... other fields
-      animation: z.string().describe('A brief description of a simple idle animation for the Focumon (e.g., "Tail wags slowly", "Blinks and looks around").'),
-    });
-    ```
-
-2.  **UI Component Interprets the Behavior**: The React component responsible for rendering the Focumon, located at `src/components/Focumon.tsx`, reads this `animation` string. It contains simple logic to check for keywords in the description and apply a corresponding CSS class.
+1.  **The `<Application />` Component**: As per the official `@pixi/react` documentation, the root of any Pixi scene is the `<Application />` component. This component creates the main canvas element and provides the context for all other Pixi elements.
 
     ```tsx
-    // in src/components/Focumon.tsx
-    const FocumonCharacter = ({ ... }) => {
-        // ...
-        const animationClass = generatedFocumon?.animation?.includes("wag") ? "animate-wag" : "";
-        return <Icon className={cn("w-48 h-48 ...", animationClass)} />
+    // src/components/PixelFocumon.tsx
+
+    import { Application } from '@pixi/react';
+
+    export default function PixelFocumon() {
+        return (
+            <div className="...">
+                 <Application options={{ backgroundAlpha: 0, width: 300, height: 300 }}>
+                    {/* Your Pixi components go here */}
+                </Application>
+            </div>
+        )
     }
     ```
 
-3.  **CSS Defines the Animation**: The `animate-wag` class is defined in `src/app/globals.css` and applies a simple keyframe animation.
+2.  **Drawing with `<Graphics />`**: The `<Graphics />` component allows you to draw shapes, lines, and fills programmatically. You provide it a `draw` function, which receives a `PIXI.Graphics` instance to draw on.
 
-### How to Extend This Behavior
+    ```tsx
+    // Inside a component rendered within <Application />
 
-You can expand this functionality by:
+    import { Graphics } from '@pixi/react';
+    import * as PIXI from 'pixi.js';
+    import { useCallback } from 'react';
 
-*   **Adding more animations**: Define new CSS keyframe animations and their corresponding utility classes in `globals.css`.
-*   **Expanding the AI's vocabulary**: Encourage the AI to use new keywords in its animation descriptions by updating the prompt in `generate-focumon-flow.ts`.
-*   **Adding more complex logic in the component**: Modify `Focumon.tsx` to recognize more keywords or even interpret more complex instructions from the AI (e.g., combining multiple animations).
+    const draw = useCallback((g: PIXI.Graphics) => {
+        g.clear();
+        g.beginFill(0x9966FF);
+        g.drawRect(-25, -25, 50, 50); // Draw a 50x50 square
+        g.endFill();
+    }, []);
 
-This model allows for a separation of concerns: the AI acts as a "designer" of behavior, and the UI components act as the "engine" that executes that design.
+    return <Graphics draw={draw} />;
+    ```
+
+3.  **Animation with `useTick`**: For smooth, game-like animations, `@pixi/react` provides the `useTick` hook. This hook registers a function to be called on every frame of the Pixi application's ticker. It's the ideal place to update state variables that control position, rotation, scale, etc.
+
+    ```tsx
+    // Inside a component rendered within <Application />
+
+    import { useTick } from '@pixi/react';
+    import { useState } from 'react';
+
+    const [rotation, setRotation] = useState(0);
+
+    // This will run on every frame
+    useTick((delta) => {
+        // `delta` is the time elapsed since the last frame, useful for framerate-independent animation
+        setRotation((currentRotation) => currentRotation + 0.01 * delta);
+    });
+
+    // You can then use the `rotation` state on a <Container /> or other component
+    return <Container rotation={rotation}>...</Container>
+    ```
+
+### Best Practices in This Project
+
+*   **Encapsulate Logic**: Create separate components for distinct visual elements (e.g., `FocumonCharacter`, `Environment`).
+*   **Use `useCallback` for Drawing**: Wrap your `draw` functions in `useCallback` to prevent them from being recreated on every render, which improves performance.
+*   **Animate with State**: Drive animations by updating state variables within the `useTick` hook, and pass those state variables as props to your Pixi components (`<Container rotation={rotation} />`). This keeps your animations declarative and in sync with React's rendering lifecycle.
