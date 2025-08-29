@@ -37,8 +37,8 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
     setFocumonVelocity(0);
     setScore(0);
     setPipes([
-      { x: GAME_WIDTH, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
-      { x: GAME_WIDTH + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
+      { x: GAME_WIDTH + 100, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100, passed: false },
+      { x: GAME_WIDTH + 100 + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100, passed: false },
     ]);
   };
 
@@ -66,15 +66,13 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       const nextPipe = pipes.find(p => p.x + PIPE_WIDTH > GAME_WIDTH / 4 - FOCUMON_SIZE / 2);
       if (nextPipe) {
         const pipeGapCenter = nextPipe.topHeight + PIPE_GAP / 2;
-        
-        // If the focumon is falling and is below the center of the gap, jump.
-        // The threshold (e.g., 20) prevents spam-jumping at the top.
-        if (focumonPosition > pipeGapCenter + 20 && focumonVelocity > 0) {
-           setFocumonVelocity(-JUMP_STRENGTH);
+        // Proactively jump if below the center of the gap.
+        if (focumonPosition > pipeGapCenter) {
+           setFocumonVelocity(-JUMP_STRENGTH * 0.85); // Slightly weaker jump for smoother control
         }
-      } else if (focumonPosition > GAME_HEIGHT / 2.5 && focumonVelocity > 0) {
-        // If there are no pipes, try to stay in the middle
-        setFocumonVelocity(-JUMP_STRENGTH);
+      } else if (focumonPosition > GAME_HEIGHT / 2 && focumonVelocity >= 0) {
+        // If there are no pipes, try to stay in the middle by giving a small hop
+        setFocumonVelocity(-JUMP_STRENGTH / 2);
       }
     }
 
@@ -136,7 +134,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         if (newPipes.length > 0 && newPipes[0].x < -PIPE_WIDTH) {
             newPipes.shift();
             const lastPipe = newPipes[newPipes.length - 1];
-            newPipes.push({ x: (lastPipe?.x || GAME_WIDTH) + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 });
+            newPipes.push({ x: (lastPipe?.x || GAME_WIDTH) + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100, passed: false });
         }
         
         return newPipes;
@@ -150,7 +148,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
   }, [focumonPosition, controls]);
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' && isRunning) {
       gameLoopRef.current = requestAnimationFrame(gameLoop);
     } else {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
@@ -159,22 +157,16 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, isAiControlled]);
+  }, [gameState, isAiControlled, isRunning]);
 
-  const handleManualTap = () => {
-    if (isAiControlled) return; // Ignore taps if AI is on
-
-    if (gameState === 'playing') {
+  const handleContainerClick = () => {
+    if (gameState === 'playing' && !isAiControlled) {
       setFocumonVelocity(-JUMP_STRENGTH);
-    } else if (gameState === 'waiting' && isRunning) {
-        setGameState('playing');
-    }
-  };
-
-  const handleRestart = () => {
-    if (gameState === 'gameOver' && isRunning) {
+    } else if (gameState === 'gameOver') {
       resetGame();
-      setGameState('playing');
+      if (isRunning) {
+        setGameState('playing');
+      }
     }
   };
 
@@ -188,7 +180,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         maxHeight: '100%',
         aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}`
       }}
-      onClick={handleManualTap}
+      onClick={handleContainerClick}
     >
       <motion.div
         className="absolute z-10"
@@ -235,7 +227,10 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
         {score}
       </div>
 
-       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 font-headline text-sm text-white z-20 bg-black/40 px-3 py-2 rounded-md">
+       <div 
+         className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 font-headline text-sm text-white z-20 bg-black/40 px-3 py-2 rounded-md"
+         onClick={(e) => e.stopPropagation()} // Prevent click from bubbling to the game container
+       >
            <Switch
             id="ai-mode"
             checked={isAiControlled}
@@ -244,15 +239,22 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
            <Label htmlFor="ai-mode">AI Autoplay</Label>
        </div>
 
-      {(!isRunning || (gameState === 'waiting' && isRunning)) && gameState !== 'gameOver' && (
+      {!isRunning && gameState !== 'gameOver' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
           <p className="font-headline text-2xl text-white text-center">
-            {isRunning ? (isAiControlled ? "AI is playing..." : "Tap to Start") : "Start Focus to Play"}
+            Start Focus to Play
+          </p>
+        </div>
+      )}
+       {gameState === 'waiting' && isRunning && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30 pointer-events-none">
+          <p className="font-headline text-2xl text-white text-center">
+            {isAiControlled ? "AI is playing..." : "Tap to Start"}
           </p>
         </div>
       )}
       {gameState === 'gameOver' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-30 cursor-pointer" onClick={handleRestart}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-30 cursor-pointer">
             <p className="font-headline text-4xl text-white">Game Over</p>
             <p className="font-headline text-xl text-white mt-4">Tap to Retry</p>
         </div>
