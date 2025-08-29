@@ -12,19 +12,26 @@ const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
   const controls = useAnimation();
 
   useEffect(() => {
+    let isMounted = true;
+
+    const wander = () => {
+      if (!isMounted) return;
+      controls.start({
+        x: Math.random() * (CONTAINER_WIDTH - FOCUMON_SIZE),
+        y: Math.random() * (CONTAINER_HEIGHT - FOCUMON_SIZE),
+        scaleX: Math.random() > 0.5 ? 1 : -1,
+        transition: {
+          duration: Math.random() * 3 + 2, // Slower, more natural movement
+          ease: 'easeInOut',
+        },
+      }).then(() => {
+        if(isMounted) wander();
+      });
+    };
+
     if (isRunning) {
-      const wander = () => {
-        controls.start({
-          x: Math.random() * (CONTAINER_WIDTH - FOCUMON_SIZE),
-          y: Math.random() * (CONTAINER_HEIGHT - FOCUMON_SIZE),
-          scaleX: Math.random() > 0.5 ? 1 : -1,
-          transition: {
-            duration: Math.random() * 3 + 2, // Slower, more natural movement
-            ease: 'easeInOut',
-          },
-        }).then(wander); // Chain the next movement
-      };
-      wander();
+      // Start the animation slightly after the component has mounted to avoid race conditions.
+      setTimeout(wander, 0);
     } else {
       // When not running, stop all animations and center the Focumon
       controls.stop();
@@ -36,7 +43,10 @@ const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
       });
     }
     
-    return () => controls.stop();
+    return () => {
+      isMounted = false;
+      controls.stop();
+    }
   }, [isRunning, controls]);
 
   return (
