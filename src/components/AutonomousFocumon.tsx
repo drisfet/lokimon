@@ -1,8 +1,8 @@
 'use client';
 
 import { motion, useAnimation } from 'framer-motion';
-import { Rabbit } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { AnimatedFocumon } from './AnimatedFocumon';
 
 const CONTAINER_WIDTH = 400;
 const CONTAINER_HEIGHT = 400;
@@ -10,31 +10,38 @@ const FOCUMON_SIZE = 60;
 
 const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
   const controls = useAnimation();
+  const [isMoving, setIsMoving] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     const wander = () => {
       if (!isMounted) return;
+      setIsMoving(true);
       controls.start({
         x: Math.random() * (CONTAINER_WIDTH - FOCUMON_SIZE),
         y: Math.random() * (CONTAINER_HEIGHT - FOCUMON_SIZE),
         scaleX: Math.random() > 0.5 ? 1 : -1,
         transition: {
-          duration: Math.random() * 3 + 2, // Slower, more natural movement
+          duration: Math.random() * 3 + 2,
           ease: 'easeInOut',
         },
       }).then(() => {
-        if(isMounted) wander();
+        setIsMoving(false);
+        if(isMounted) {
+            setTimeout(() => {
+                if (isMounted) wander();
+            }, (Math.random() * 2000) + 1000); // Wait 1-3 seconds before wandering again
+        }
       });
     };
 
     if (isRunning) {
-      // Start the animation slightly after the component has mounted to avoid race conditions.
-      setTimeout(wander, 0);
+      setTimeout(wander, 1000); // Start after a short delay
     } else {
       // When not running, stop all animations and center the Focumon
       controls.stop();
+      setIsMoving(false);
       controls.start({
         x: (CONTAINER_WIDTH - FOCUMON_SIZE) / 2,
         y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
@@ -69,7 +76,7 @@ const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
         className="absolute"
         style={{ width: FOCUMON_SIZE, height: FOCUMON_SIZE }}
       >
-        <Rabbit className="w-full h-full text-accent drop-shadow-lg" />
+        <AnimatedFocumon isMoving={isMoving} />
       </motion.div>
        { !isRunning && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
