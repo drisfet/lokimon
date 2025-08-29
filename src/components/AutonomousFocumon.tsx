@@ -16,19 +16,27 @@ function useWander(
   controls: any,
   isRunning: boolean,
   foodPosition: { x: number; y: number },
-  positionRef: React.MutableRefObject<{ x: number; y: number }>
+  positionRef: React.MutableRefObject<{ x: number; y: number }>,
+  isDraggingRef: React.MutableRefObject<boolean>
 ) {
   const [isMoving, setIsMoving] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const isMountedRef = useRef(true);
+  const wanderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
+    return () => { 
+      isMountedRef.current = false; 
+      if (wanderTimeoutRef.current) clearTimeout(wanderTimeoutRef.current);
+    };
   }, []);
 
   const wander = useCallback(async () => {
-    if (!isMountedRef.current || !isRunning) return;
+    if (!isMountedRef.current || !isRunning || isDraggingRef.current) return;
+    
+    // Clear any existing wander timeout
+    if (wanderTimeoutRef.current) clearTimeout(wanderTimeoutRef.current);
 
     // Check for interaction
     const focumonPos = positionRef.current;
@@ -40,7 +48,7 @@ function useWander(
     if (distance < INTERACTION_DISTANCE) {
       setIsMoving(false);
       setIsInteracting(true);
-      const targetPos = { x: foodPosition.x, y: foodPosition.y + 10 };
+      const targetPos = { x: foodPosition.x - (FOCUMON_SIZE/4), y: foodPosition.y - (FOCUMON_SIZE/2) };
       positionRef.current = targetPos;
       await controls.start({
         ...targetPos,
@@ -49,7 +57,7 @@ function useWander(
       });
 
       // Stay and "eat" for a bit
-      setTimeout(() => {
+      wanderTimeoutRef.current = setTimeout(() => {
         if (isMountedRef.current) {
             setIsInteracting(false);
             wander(); // Go back to wandering
@@ -64,8 +72,7 @@ function useWander(
       x: Math.random() * (CONTAINER_WIDTH - FOCUMON_SIZE),
       y: Math.random() * (CONTAINER_HEIGHT - FOCUMON_SIZE)
     };
-    positionRef.current = nextPos;
-
+    
     await controls.start({
       ...nextPos,
       scaleX: nextPos.x > focumonPos.x ? 1 : -1,
@@ -74,45 +81,51 @@ function useWander(
         ease: 'easeInOut',
       },
     });
+    positionRef.current = nextPos;
 
     setIsMoving(false);
-    setTimeout(() => {
+    wanderTimeoutRef.current = setTimeout(() => {
         if(isMountedRef.current) wander()
     }, Math.random() * 2000 + 1000);
-  }, [controls, isRunning, foodPosition, positionRef]);
+  }, [controls, isRunning, foodPosition, positionRef, isDraggingRef]);
 
   useEffect(() => {
-    if (isRunning) {
+    if (isRunning && !isDraggingRef.current) {
       // Set timeout to ensure component is mounted before starting animation
-      setTimeout(wander, 1000);
+      wanderTimeoutRef.current = setTimeout(wander, 1000);
     } else {
       // When not running, stop all animations and center the Focumon
       controls.stop();
+      if (wanderTimeoutRef.current) clearTimeout(wanderTimeoutRef.current);
       setIsMoving(false);
       setIsInteracting(false);
-      const centerPos = {
-        x: (CONTAINER_WIDTH - FOCUMON_SIZE) / 2,
-        y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
-      };
-      positionRef.current = centerPos;
-      controls.start({
-        ...centerPos,
-        scaleX: 1,
-        transition: { duration: 0.5 },
-      });
+      if (!isDraggingRef.current) {
+          const centerPos = {
+            x: (CONTAINER_WIDTH - FOCUMON_SIZE) / 2,
+            y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
+          };
+          controls.start({
+            ...centerPos,
+            scaleX: 1,
+            transition: { duration: 0.5 },
+          });
+          positionRef.current = centerPos;
+      }
     }
 
     return () => {
       controls.stop();
+      if (wanderTimeoutRef.current) clearTimeout(wanderTimeoutRef.current);
     };
-  }, [isRunning, controls, wander, positionRef]);
+  }, [isRunning, controls, wander, positionRef, isDraggingRef]);
 
-  return { isMoving, isInteracting };
+  return { isMoving, isInteracting, wander };
 }
 
 
 const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
   const controls = useAnimation();
+  const containerRef = useRef(null);
   const [foodPosition] = useState({ 
       x: CONTAINER_WIDTH * 0.75, 
       y: CONTAINER_HEIGHT * 0.75 
@@ -122,10 +135,25 @@ const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
     y: (CONTAINER_HEIGHT - FOCUMON_SIZE) / 2,
   }
   const positionRef = useRef(initialPosition);
-  const { isMoving, isInteracting } = useWander(controls, isRunning, foodPosition, positionRef);
+  const isDraggingRef = useRef(false);
+
+  const { isMoving, isInteracting, wander } = useWander(controls, isRunning, foodPosition, positionRef, isDraggingRef);
+
+  const handleDragStart = () => {
+    isDraggingRef.current = true;
+  };
+
+  const handleDragEnd = (event: any, info: any) => {
+    isDraggingRef.current = false;
+    positionRef.current = { x: info.point.x, y: info.point.y };
+    // After dragging, wait a bit then resume wandering
+    setTimeout(wander, 2000);
+  };
+
 
   return (
     <div
+      ref={containerRef}
       className="relative bg-primary/20 overflow-hidden rounded-lg shadow-inner"
       style={{
         width: `${CONTAINER_WIDTH}px`,
@@ -151,10 +179,16 @@ const AutonomousFocumon = ({ isRunning }: { isRunning: boolean }) => {
 
       {/* The Focumon */}
       <motion.div
+        drag
+        dragConstraints={containerRef}
+        dragElastic={0.1}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         animate={controls}
         initial={initialPosition}
-        className="absolute"
+        className="absolute cursor-grab active:cursor-grabbing"
         style={{ width: FOCUMON_SIZE, height: FOCUMON_SIZE }}
+        whileTap={{ cursor: "grabbing" }}
       >
         <AnimatedFocumon isMoving={isMoving || isInteracting} />
       </motion.div>
