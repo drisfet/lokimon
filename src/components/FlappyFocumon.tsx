@@ -23,6 +23,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
   const [focumonVelocity, setFocumonVelocity] = useState(0);
   const [pipes, setPipes] = useState<any[]>([]);
   const [score, setScore] = useState(0);
+  const [isAiControlled, setIsAiControlled] = useState(true);
 
   const gameLoopRef = useRef<number>();
   const controls = useAnimation();
@@ -37,6 +38,7 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       { x: GAME_WIDTH, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
       { x: GAME_WIDTH + GAME_WIDTH / 2 + 50, topHeight: Math.random() * (GAME_HEIGHT / 2) + 100 },
     ]);
+    setIsAiControlled(true); // AI is in control on reset
   };
 
   useEffect(() => {
@@ -57,6 +59,22 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
        if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
        return;
     };
+
+    // AI Control Logic
+    if (isAiControlled) {
+      const nextPipe = pipes.find(p => p.x + PIPE_WIDTH > GAME_WIDTH / 4 - FOCUMON_SIZE / 2);
+      if (nextPipe) {
+        const pipeGapCenter = nextPipe.topHeight + PIPE_GAP / 2;
+        // Add a small buffer to make it look smoother
+        const safeZoneTop = pipeGapCenter - 30;
+
+        // If Focumon is falling below the safe zone, jump!
+        if (focumonPosition > safeZoneTop && focumonVelocity > 0) {
+           setFocumonVelocity(-JUMP_STRENGTH);
+        }
+      }
+    }
+
 
     // Focumon physics
     setFocumonVelocity(v => {
@@ -138,9 +156,14 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState]);
+  }, [gameState, isAiControlled]); // Rerun effect if AI control changes
 
   const handleTap = () => {
+    // First tap by user takes control from AI
+    if (isAiControlled) {
+        setIsAiControlled(false);
+    }
+
     if (gameState === 'playing') {
       setFocumonVelocity(-JUMP_STRENGTH);
     } else if (gameState === 'gameOver' && isRunning) {
@@ -210,6 +233,12 @@ export default function FlappyFocumon({ isRunning }: { isRunning: boolean }) {
       <div className="absolute top-4 left-1/2 -translate-x-1/2 font-headline text-5xl text-white text-stroke-black z-20">
         {score}
       </div>
+
+       {isAiControlled && gameState === 'playing' && (
+         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 font-headline text-lg text-white z-20 bg-black/50 px-4 py-2 rounded-lg">
+           AI is playing... Tap to take over!
+         </div>
+       )}
 
       {(!isRunning || (gameState === 'waiting' && isRunning)) && gameState !== 'gameOver' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-30">
