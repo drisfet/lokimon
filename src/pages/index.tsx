@@ -2,6 +2,8 @@ import Head from "next/head";
 import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRef, useState } from "react";
+import { IRefPhaserGame } from "@/PhaserGame";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +22,81 @@ export default function Home() {
             </Head>
             <main className={`min-h-screen bg-gray-900 flex flex-col ${inter.className}`}>
                 <AppWithoutSSR />
+                
+                {/* Control Buttons */}
+                <div className="flex justify-center space-x-2 p-4">
+                    <button
+                        onClick={() => {
+                            // Dispatch event to change scene
+                            window.dispatchEvent(new CustomEvent('change-scene'));
+                        }}
+                        style={{
+                            background: '#374151',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        Change Scene
+                    </button>
+                    <button
+                        onClick={() => {
+                            // Dispatch event to toggle movement
+                            window.dispatchEvent(new CustomEvent('toggle-movement'));
+                        }}
+                        style={{
+                            background: '#374151',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        Toggle Movement
+                    </button>
+                    <button
+                        onClick={() => {
+                            // Dispatch event to add sprite
+                            window.dispatchEvent(new CustomEvent('add-sprite'));
+                        }}
+                        style={{
+                            background: '#374151',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        Add New Sprite
+                    </button>
+                    <button
+                        onClick={() => {
+                            window.location.href = '/portal';
+                        }}
+                        style={{
+                            background: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontFamily: 'monospace'
+                        }}
+                    >
+                        Start
+                    </button>
+                </div>
                 
                 {/* Main content area */}
                 <div className="flex-1 flex flex-col items-center justify-center p-4">

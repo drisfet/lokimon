@@ -1,8 +1,9 @@
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { IRefPhaserGame } from "@/PhaserGame";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,8 +16,12 @@ const PhaserGame = dynamic(
     }
 );
 
+// Dynamically import App component to get the button functions
+const AppWithoutSSR = dynamic(() => import("@/App"), { ssr: false });
+
 export default function Portal() {
-    const phaserRef = useRef(null);
+    const phaserRef = useRef<IRefPhaserGame>(null);
+    const [canMoveSprite, setCanMoveSprite] = useState(true);
 
     return (
         <>
@@ -77,10 +82,120 @@ export default function Portal() {
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col">
                     {/* Phaser Game Container */}
-                    <div className="flex-1 flex items-center justify-center p-4">
-                        <div className="w-full max-w-4xl mx-auto mt-4 p-4 portal-container">
-                            <PhaserGame />
+                    <div className="flex-1 flex items-center justify-center p-4 relative">
+                        <div
+                            className="w-full max-w-4xl mx-auto mt-4 p-4"
+                            style={{
+                                width: '100%',
+                                height: '70vh',
+                                minHeight: '400px',
+                                background: '#14b8a6',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                position: 'relative'
+                            }}
+                        >
+                            <div
+                                id="game-container-wrapper"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    position: 'relative',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <div
+                                    id="game-master-container"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        position: 'relative',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <AppWithoutSSR />
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    {/* Control Buttons */}
+                    <div className="flex justify-center space-x-2 p-4">
+                        <button
+                            onClick={() => {
+                                // Dispatch event to change scene
+                                window.dispatchEvent(new CustomEvent('change-scene'));
+                            }}
+                            style={{
+                                background: '#374151',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontFamily: 'monospace'
+                            }}
+                        >
+                            Change Scene
+                        </button>
+                        <button
+                            onClick={() => {
+                                // Dispatch event to toggle movement
+                                window.dispatchEvent(new CustomEvent('toggle-movement'));
+                            }}
+                            style={{
+                                background: '#374151',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontFamily: 'monospace'
+                            }}
+                        >
+                            Toggle Movement
+                        </button>
+                        <button
+                            onClick={() => {
+                                // Dispatch event to add sprite
+                                window.dispatchEvent(new CustomEvent('add-sprite'));
+                            }}
+                            style={{
+                                background: '#374151',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontFamily: 'monospace'
+                            }}
+                        >
+                            Add New Sprite
+                        </button>
+                        <button
+                            onClick={() => {
+                                window.location.href = '/';
+                            }}
+                            style={{
+                                background: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontFamily: 'monospace'
+                            }}
+                        >
+                            Start
+                        </button>
                     </div>
 
                     {/* Stats Section */}

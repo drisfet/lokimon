@@ -80,7 +80,40 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
     }, [currentActiveScene, ref]);
 
     return (
-        <div id="game-container"></div>
+        <div
+            id="game-container"
+            style={{
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}
+        >
+            <style jsx global>{`
+                #game-container,
+                #game-container *,
+                #game-container canvas,
+                #game-container div,
+                #game-container div canvas,
+                #game-container div div,
+                #game-container div div canvas,
+                #game-container div div div,
+                #game-container div div div canvas {
+                    width: 100% !important;
+                    height: 100% !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                }
+                #game-container canvas,
+                #game-container div canvas,
+                #game-container div div canvas,
+                #game-container div div div canvas {
+                    object-fit: contain !important;
+                }
+            `}</style>
+        </div>
     );
 
 });

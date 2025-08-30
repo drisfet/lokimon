@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { IRefPhaserGame, PhaserGame } from './PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
 import Link from 'next/link';
@@ -86,23 +86,26 @@ function App()
         
     }
 
+    // Listen for custom events from detached buttons
+    useEffect(() => {
+        const handleSceneChange = () => changeScene();
+        const handleToggleMovement = () => moveSprite();
+        const handleAddSprite = () => addSprite();
+
+        window.addEventListener('change-scene', handleSceneChange);
+        window.addEventListener('toggle-movement', handleToggleMovement);
+        window.addEventListener('add-sprite', handleAddSprite);
+
+        return () => {
+            window.removeEventListener('change-scene', handleSceneChange);
+            window.removeEventListener('toggle-movement', handleToggleMovement);
+            window.removeEventListener('add-sprite', handleAddSprite);
+        };
+    }, []);
+
     return (
         <div id="app">
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
-            <div className="control-buttons">
-                <div>
-                    <button className="button" onClick={changeScene}>Change Scene</button>
-                </div>
-                <div>
-                    <button disabled={canMoveSprite} className="button" onClick={moveSprite}>Toggle Movement</button>
-                </div>
-                <div>
-                    <button className="button" onClick={addSprite}>Add New Sprite</button>
-                </div>
-                <div>
-                    <button className="button" onClick={startGame}>Start</button>
-                </div>
-            </div>
             <div className="spritePosition">Sprite Position:
                 <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
             </div>

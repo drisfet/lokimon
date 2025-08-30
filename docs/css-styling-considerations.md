@@ -205,3 +205,61 @@ To verify Tailwind CSS is working properly:
 - [Tailwind CSS v4 Documentation](https://tailwindcss.com/docs/v4-beta)
 - [Next.js with Tailwind CSS](https://nextjs.org/docs/app/building-your-application/styling/tailwind-css)
 - [PostCSS Configuration](https://postcss.org/docs/postcss-plugins/)
+
+## Phaser Game Canvas Responsiveness Fix
+
+### Problem
+The Phaser game canvas on the `/portal` page had hardcoded dimensions (1024x768) that caused overflow and cutoff issues on mobile devices, despite the container being responsive.
+
+### Solution Approach
+Required a multi-layered approach targeting both the container hierarchy and the canvas element itself:
+
+### Layer 1: Container Structure (portal.tsx)
+```tsx
+// Outer container with responsive dimensions
+<div style={{ width: '100%', height: '70vh', minHeight: '400px' }}>
+
+// Wrapper container with mobile scaling
+<div style={{ transform: 'scale(0.6)', transformOrigin: 'center center' }}>
+
+// Master container for centralized control
+<div style={{ width: '100%', height: '100%' }}>
+```
+
+### Layer 2: Canvas Element Control (PhaserGame.tsx)
+```tsx
+<style jsx global>{`
+    #game-container,
+    #game-container *,
+    #game-container canvas,
+    #game-container div,
+    #game-container div canvas,
+    #game-container div div,
+    #game-container div div canvas,
+    #game-container div div div,
+    #game-container div div div canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+    }
+    #game-container canvas,
+    #game-container div canvas,
+    #game-container div div canvas,
+    #game-container div div div canvas {
+        object-fit: contain !important;
+    }
+`}</style>
+```
+
+### Key Technical Details
+1. **Global CSS Scope**: Used `<style jsx global>` instead of component-scoped CSS
+2. **Universal Selectors**: `#game-container *` to target all nested elements
+3. **Deep Hierarchy Coverage**: Targeted up to 3 levels of nested divs and canvas elements
+4. **Important Declarations**: `!important` to override hardcoded Phaser dimensions
+5. **Object Fit**: `object-fit: contain` to maintain aspect ratio
+6. **Mobile Scaling**: 60% transform scaling for mobile optimization
+7. **Portal-Only**: Changes only affect `/portal` page, leaving main entrance page unchanged
+
+### Resolution
+The combination of container scaling and global CSS targeting finally eliminated the hardcoded canvas dimensions, ensuring proper mobile responsiveness without affecting other pages.
