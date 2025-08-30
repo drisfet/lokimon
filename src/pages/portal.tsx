@@ -78,45 +78,27 @@ export default function Portal() {
             }}
         >
             {/* Main Content - Phaser Game Container */}
-            <div className="flex-1 flex flex-col min-h-0 pr-0 md:pr-16">
-                <div className="flex-1 flex items-center justify-center p-4 relative">
+            <div
+                className="flex-1 flex flex-col min-h-0 pr-0 md:pr-16"
+                style={{ overflow: 'hidden' }}
+            >
+                <div
+                    className="flex-1 flex items-center justify-center p-4"
+                    style={{ overflow: 'hidden' }}
+                >
                     <div
-                        className="w-full max-w-4xl mx-auto"
                         style={{
                             width: '100%',
-                            height: '70vh',
-                            minHeight: '400px',
+                            maxWidth: '1024px',
+                            height: '100%',
+                            maxHeight: '768px',
                             background: '#14b8a6',
                             borderRadius: '8px',
                             overflow: 'hidden',
-                            position: 'relative'
+                            margin: '0 auto'
                         }}
                     >
-                        <div
-                            id="game-container-wrapper"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                position: 'relative',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <div
-                                id="game-master-container"
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    position: 'relative',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <AppWithoutSSR />
-                            </div>
-                        </div>
+                        <AppWithoutSSR />
                     </div>
                 </div>
             </div>

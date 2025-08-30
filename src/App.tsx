@@ -104,9 +104,35 @@ function App()
     }, []);
 
     return (
-        <div id="app">
+        <div
+            id="app"
+            style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: '1024px',
+                maxHeight: '768px',
+                overflow: 'hidden',
+                margin: '0 auto',
+                position: 'relative'
+            }}
+        >
             <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
-            <div className="spritePosition">Sprite Position:
+            <div
+                className="spritePosition"
+                style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    left: '10px',
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    color: 'white',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                    zIndex: 1000
+                }}
+            >
+                Sprite Position:
                 <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
             </div>
         </div>
